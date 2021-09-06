@@ -2,16 +2,22 @@ from tba import tba
 import numpy as np
 
 nc_events = ['2018ncgre', '2018ncpem', '2018ncash', '2018ncwin', '2018nccmp']
+
 class MatchQM:    
     # make a new instance for different events
     def __init__(self, event_key):
         self.event_key = event_key
         self.matches = tba._fetch('event/%s/matches' % (event_key))
         updated_matches = []
+        other_matches = []
         for match in self.matches:
             if match['comp_level'] == 'qm':
                 updated_matches.append(match)
+            else: 
+                other_matches.append(match)
+
         self.matches = updated_matches
+        self.other_matches = other_matches
 
     def get_match_data(self, match_num):
         for match in self.matches:
