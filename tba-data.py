@@ -35,17 +35,28 @@ for event in nc_events:
         red_teams, blue_teams = myMatch.get_teams(match_num, 'red'), myMatch.get_teams(match_num, 'blue')
         for team in red_teams:
             if team in bg_data:
-                np.append(mtch_dta, bg_data[team])
+                for point in bg_data[team]:
+                    train_data_file.write(str(point) + ' ')
+                train_data_file.write('\n')
+                print(bg_data[team])
             else:
-                np.append(mtch_dta, np.zeros(10))
+                for point in range(10):
+                    train_data_file.write('0')
+                train_data_file.write('\n')
+                print("----- Not an NC Team -----")
         for team in blue_teams:
             if team in bg_data:
-                np.append(mtch_dta, bg_data[team])
-        for team in mtch_dta:
-            for val in team:
-                train_data_file.write(str(val) + " ")
-            train_data_file.write("\n")
-        train_data_file.write("match")
+                for point in bg_data[team]:
+                    train_data_file.write(str(point) + ' ')
+                train_data_file.write('\n')
+                print(bg_data[team])
+            else:
+                for point in range(10):
+                    train_data_file.write('0')
+                train_data_file.write('\n')
+                print("----- Not an NC Team -----")
+        train_data_file.write('match\n')
+        print("Finished a match")
 
         # training labels
         red_score = myMatch.red_total(match_num)
@@ -54,6 +65,7 @@ for event in nc_events:
         score = blue_score / (blue_score + red_score)
         train_labels_file.write(str(score))
         train_labels_file.write("\n")
-    print("event done!")
+    print("------- FINISHED AN EVENT -------")
     
 train_data_file.close()
+train_labels_file.close()
