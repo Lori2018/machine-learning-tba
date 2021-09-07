@@ -37,7 +37,7 @@ def build_model():
     model.add(layers.Dense(512, activation='relu',
               input_shape=(training_data.shape[2],)))
     model.add(layers.Dense(1))
-    model.compile(optimizer='rmsprop', loss='mse', metrics=['mae'])
+    model.compile(optimizer='rmsprop', loss='mse', metrics=['accuracy'])
     return model
 
 num_epochs = 20
@@ -62,8 +62,23 @@ for i in range(k):
 
     model = build_model()
 
+    # history = model.fit(partial_train_data, partial_train_labels,
+    #                     validation_data=(val_data, val_labels),
+    #                     epochs=num_epochs, batch_size=1, verbose=0)
     history = model.fit(partial_train_data, partial_train_labels,
-                        validation_data=(val_data, val_labels),
-                        epochs=num_epochs, batch_size=1, verbose=1)
+                        epochs=num_epochs, batch_size = 1, validation_data=(val_data, val_labels))
     mae_history = history.history['val_mae']
     all_mae_histories.append(mae_history)
+
+    average_mae_history = [np.mean([x[i] for x in all_mae_histories]) for i in range(num_epochs)]
+print(average_mae_history)
+print(history.history.keys())
+    # mean = train_data.mean(axis=0)
+    # train_data -= mean
+    # std = train_data.std(axis=0)
+    # train_data /= std
+
+    # test_data -= mean
+    # test_data /= std
+
+    # test_mse_score, test_mae_score = model.evaluate(test_data, test_targets)
