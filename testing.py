@@ -9,7 +9,8 @@ raw = data_file.read()
 data = raw.split('match')
 
 # number of matches (407), teams per match, 10 features of each team
-training_data = np.empty((len(data) - 1, 6, 10))
+# UPDATE - flat input so (407, 60)
+training_data = np.empty((len(data) - 1, 10 * 6))
 
 mtch_cnt = 0
 for match in data:
@@ -23,8 +24,12 @@ for match in data:
         if len(data) > 1:
             features = [float(point) for point in data if point != '']
         if mtch_cnt < 407:
-            training_data[mtch_cnt][tm_cnt] = features  
-        tm_cnt = tm_cnt + 1 if tm_cnt < 5 else 0
+            if tm_cnt < 6:
+                np.append(training_data[mtch_cnt], features)
+            else: 
+                tm_cnt = 0
+                mtch_cnt += 1
+        # tm_cnt = tm_cnt + 1 if tm_cnt < 5 else 0
     mtch_cnt += 1
 
 data_file.close()
@@ -32,12 +37,11 @@ data_file.close()
 training_labels = np.loadtxt('training_labels.txt')
 
 def build_model():
-    # tf.reshape(training_data, [])
     model = models.Sequential()
     model.add(layers.Dense(512, activation='relu',
-              input_shape=(training_data.shape[2],)))
+              input_shape=(training_data.shape[1],)))
     model.add(layers.Dense(1))
-    model.compile(optimizer='rmsprop', loss='mse', metrics=['accuracy'])
+    model.compile(optimizer='rmsprop', loss='mse', metrics=['val_mae'])
     return model
 
 num_epochs = 20
@@ -71,8 +75,8 @@ for i in range(k):
     all_mae_histories.append(mae_history)
 
     average_mae_history = [np.mean([x[i] for x in all_mae_histories]) for i in range(num_epochs)]
-print(average_mae_history)
-print(history.history.keys())
+# print(average_mae_history)
+# print(history.history.keys())
     # mean = train_data.mean(axis=0)
     # train_data -= mean
     # std = train_data.std(axis=0)
