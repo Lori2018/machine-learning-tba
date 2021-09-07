@@ -1,6 +1,8 @@
 import numpy as np
 from match import Team, MatchQM
 from tba import tba
+from keras import models, layers
+import tensorflow as tf
 
 data_file = open("training_data.txt", 'r')
 raw = data_file.read()
@@ -25,7 +27,44 @@ for match in data:
         tm_cnt = tm_cnt + 1 if tm_cnt < 5 else 0
     mtch_cnt += 1
 
-# print(training_data)
-print(training_data[406])
-
 data_file.close()
+
+training_labels = np.loadtxt('training_labels.txt')
+
+def build_model():
+    model = models.Sequential()
+    model.add(layers.Dense(64, activation='relu',
+              input_shape=(training_data.shape[1],)))
+    model.add(layers.Dense(64, activation='relu'))
+    model.add(layers.Dense(1))
+    model.compile(optimizer='rmsprop', loss='mse', metrics=['mae'])
+    return model
+
+num_epochs = 20
+all_mae_histories = []
+
+k = 5
+num_val_samples = len(training_data) // k
+
+for i in range(k):
+    print('processing fold #', i)
+    val_data = training_data[i * num_val_samples: (i + 1) * num_val_samples]
+    val_labels = training_labels[i * num_val_samples: (i + 1) * num_val_samples]
+
+    print(np.shape(training_data))
+    partial_train_data = np.concatenate(
+        [training_data[:i * num_val_samples],
+         training_data[(i + 1) * num_val_samples:]],
+         axis=0)
+    partial_train_labels = np.concatenate(
+        [training_labels[:i * num_val_samples],
+         training_labels[(i + 1) * num_val_samples:]],
+         axis=0)
+
+    model = build_model()
+
+    history = model.fit(partial_train_data, partial_train_labels,
+                        validation_data=(val_data, val_labels),
+                        epochs=num_epochs, batch_size=1, verbose=0)
+    mae_history = history.history['val_mae']
+    all_mae_histories.append(mae_history)

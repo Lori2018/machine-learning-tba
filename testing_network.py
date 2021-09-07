@@ -12,6 +12,6 @@ from keras import backend as K
 training_labels = np.loadtxt('training_labels.txt')
 data_file = open("training_data.txt", 'w+')
 
-print(training_data)
-print(trainin_data.shape)
+print(data_file)
+print(data_file.shape)
 print(training_labels.shape)
