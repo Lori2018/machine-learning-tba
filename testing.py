@@ -32,10 +32,10 @@ data_file.close()
 training_labels = np.loadtxt('training_labels.txt')
 
 def build_model():
+    # tf.reshape(training_data, [])
     model = models.Sequential()
-    model.add(layers.Dense(64, activation='relu',
-              input_shape=(training_data.shape[1],)))
-    model.add(layers.Dense(64, activation='relu'))
+    model.add(layers.Dense(512, activation='relu',
+              input_shape=(training_data.shape[2],)))
     model.add(layers.Dense(1))
     model.compile(optimizer='rmsprop', loss='mse', metrics=['mae'])
     return model
@@ -51,7 +51,6 @@ for i in range(k):
     val_data = training_data[i * num_val_samples: (i + 1) * num_val_samples]
     val_labels = training_labels[i * num_val_samples: (i + 1) * num_val_samples]
 
-    print(np.shape(training_data))
     partial_train_data = np.concatenate(
         [training_data[:i * num_val_samples],
          training_data[(i + 1) * num_val_samples:]],
@@ -65,6 +64,6 @@ for i in range(k):
 
     history = model.fit(partial_train_data, partial_train_labels,
                         validation_data=(val_data, val_labels),
-                        epochs=num_epochs, batch_size=1, verbose=0)
+                        epochs=num_epochs, batch_size=1, verbose=1)
     mae_history = history.history['val_mae']
     all_mae_histories.append(mae_history)
