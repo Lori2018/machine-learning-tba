@@ -1,19 +1,16 @@
-from tba import tba
 import numpy as np
-from match import Team, MatchQM
+from match import Team, Match
+from tba import tba
 
-pitt_key, pembroke_key, ash_key = '2018ncgre', '2018ncpem', '2018ncash'
-forsyth_key, state_champs = '2018ncwin', '2018nccmp'
 nc_events = ['2018ncgre', '2018ncpem', '2018ncash', '2018ncwin', '2018nccmp']
 fnc_key = '2018nc'
-tba.auth_key = 'vbxm8opdrSZqgnjzor6lVtLuZKTpre4oo2WR3Zw8iS3NmmI9p1G83sgC59ZmB9eF'
-states = MatchQM(state_champs)
+state_champs = '2018nccmp'
 
 nc_teams = [Team.keyToNum(key) for key in tba._fetch('district/%s/teams/keys' % (fnc_key))]
 state_teams = [Team.keyToNum(key) for key in tba._fetch('event/%s/teams/keys' % (state_champs))]
 
-train_data_file = open("training_data.txt", "w+")
-train_labels_file = open("training_labels.txt", "w+")
+train_data_file = open("validation_data.txt", "w+")
+train_labels_file = open("validation_labels.txt", "w+")
 
 # 32 teams, 10 features
 # dictionary for easy access
@@ -21,12 +18,10 @@ bg_data = {}
 index = 0
 for count in range(len(nc_teams)):
     bg_data[nc_teams[count]] = Team.compile_stats(nc_teams[count])
-    print("Finished Team #", count)
 print("Finished creating NC team dictionary")
 
-# assemble training data
 for event in nc_events:
-    myMatch = MatchQM(event)
+    myMatch = Match(event)
     all_matches = tba._fetch('event/%s/matches' % (event))
     # 6 teams, 10 features
     mtch_dta = np.empty((6, 10))

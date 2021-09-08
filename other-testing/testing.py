@@ -7,12 +7,14 @@ import tensorflow as tf
 data_file = open("training_data.txt", 'r')
 raw = data_file.read()
 data = raw.split('match')
+data_file_1 = open("scale_data.txt", "w+")
 
 # number of matches (407), teams per match, 10 features of each team
 # UPDATE - flat input so (407, 60)
 training_data = np.empty((len(data) - 1, 10 * 6))
 
 mtch_cnt = 0
+training_labels = np.loadtxt('training_labels.txt')
 for match in data:
     teams = match.split('\n')
     teams.remove('')
@@ -26,6 +28,7 @@ for match in data:
         if mtch_cnt < 407:
             if tm_cnt < 6:
                 np.append(training_data[mtch_cnt], features)
+                data_file_1.write(str(features[5]) + " " + str(training_labels[mtch_cnt]) + "\n")
             else: 
                 tm_cnt = 0
                 mtch_cnt += 1
@@ -33,8 +36,6 @@ for match in data:
     mtch_cnt += 1
 
 data_file.close()
-
-training_labels = np.loadtxt('training_labels.txt')
 
 def build_model():
     model = models.Sequential()
@@ -71,18 +72,3 @@ for i in range(k):
     #                     epochs=num_epochs, batch_size=1, verbose=0)
     history = model.fit(partial_train_data, partial_train_labels,
                         epochs=num_epochs, batch_size = 1, validation_data=(val_data, val_labels))
-    mae_history = history.history['val_mae']
-    all_mae_histories.append(mae_history)
-
-    average_mae_history = [np.mean([x[i] for x in all_mae_histories]) for i in range(num_epochs)]
-# print(average_mae_history)
-# print(history.history.keys())
-    # mean = train_data.mean(axis=0)
-    # train_data -= mean
-    # std = train_data.std(axis=0)
-    # train_data /= std
-
-    # test_data -= mean
-    # test_data /= std
-
-    # test_mse_score, test_mae_score = model.evaluate(test_data, test_targets)
